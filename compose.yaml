@@ -1,0 +1,41 @@
+
+services:
+  sim:
+    build:
+      context: .
+    container_name: sim
+    command: >
+      ./linux64/ammc-sim
+      -m 10.10.0.2
+      -d ${SIM_PASSING_DELAY:-1000-3000}
+      --decoder-id ${SIM_DECODER_ID:-0A87E5}
+      --hits ${SIM_HITS:-100}
+      --passing-numbers ${SIM_PASSING_NUMBERS:-1-3000}
+      --strength ${SIM_STRENGTH:-300}
+      --transponder ${SIM_TRANSPONDER:-12345,23456,4554444}
+      -x ${SIM_STARTUP_DELAY:-0}
+      -y ${SIM_SHUTDOWN_DELAY:-0}
+    networks:
+      sharednet:
+        ipv4_address: 10.10.0.2
+
+  decoder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: decoder
+    command: ./linux64/ammc-amb -w 9000 10.10.0.2
+    ports:
+      - "9000:9000"
+    depends_on:
+      - sim
+    networks:
+      sharednet:
+        ipv4_address: 10.10.0.3
+
+networks:
+  sharednet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.0.0/16
