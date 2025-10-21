@@ -1,8 +1,11 @@
 
 services:
   sim:
+    image: ghcr.io/andrewrutherfoord/ammc:${AMMC_VER:-v7.5.0}
     build:
       context: .
+      args:
+        AMMC_SIMULATION_VERSION: ${AMMC_VER:-v7.5.0}
     container_name: sim
     command: >
       ./linux64/ammc-sim
@@ -20,15 +23,19 @@ services:
         ipv4_address: 10.10.0.2
 
   decoder:
+    image: ghcr.io/andrewrutherfoord/ammc:${AMMC_VER:-v7.5.0}
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+       AMMC_SIMULATION_VERSION: ${AMMC_VER:-v7.5.0}
     container_name: decoder
     command: ./linux64/ammc-amb -w 9000 10.10.0.2
     ports:
       - "9000:9000"
     depends_on:
-      - sim
+      sim:
+        condition: service_started
     networks:
       sharednet:
         ipv4_address: 10.10.0.3
