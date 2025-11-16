@@ -1,0 +1,73 @@
+name: Build and push AMMC image
+
+on:
+  schedule:
+    # Runs once a day at 03:00 UTC
+    - cron: "0 3 * * *"
+  workflow_dispatch: # allows manual triggering too
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: andrewrutherfoord/ammc
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Detect remote version hash
+        id: detect
+        run: |
+          # Fetch headers only — no full download
+          META=$(curl -sI https://www.ammconverter.eu/ammc-latest.zip)
+          echo "$META"
+          # Extract ETag or Last-Modified
+          ETAG=$(echo "$META" | grep -i ETag | awk '{print $2}' | tr -d '\r"')
+          LMOD=$(echo "$META" | grep -i Last-Modified | cut -d' ' -f2- | tr -d '\r')
+          echo "etag=$ETAG" >> "$GITHUB_OUTPUT"
+          echo "lastmod=$LMOD" >> "$GITHUB_OUTPUT"
+
+      - name: Check if we already built this version
+        id: cache
+        run: |
+          echo "ETAG=${{ steps.detect.outputs.etag }}"
+          if [ -z "${{ steps.detect.outputs.etag }}" ]; then
+            echo "No ETag found, always rebuild."
+          fi
+
+          mkdir -p .cache
+          if [ -f .cache/etag.txt ] && \
+             [ "$(cat .cache/etag.txt)" = "${{ steps.detect.outputs.etag }}" ]; then
+            echo "nochange=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "nochange=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Stop if file unchanged
+        if: steps.cache.outputs.nochange == 'true'
+        run: echo "No change detected, skipping build" && exit 0
+
+      - name: Build docker image
+        run: |
+          docker build -t $REGISTRY/$IMAGE_NAME:latest .
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push docker image
+        run: docker push $REGISTRY/$IMAGE_NAME:latest
+
+      - name: Save new ETag
+        if: steps.cache.outputs.nochange != 'true'
+        run: |
+          echo "${{ steps.detect.outputs.etag }}" > .cache/etag.txt
