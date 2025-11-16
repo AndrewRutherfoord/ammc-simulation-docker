@@ -1,6 +1,9 @@
 name: Build and push AMMC image
 
 on:
+  push:
+    branches:
+      - build-workflow
   schedule:
     # Runs once a day at 03:00 UTC
     - cron: "0 3 * * *"
