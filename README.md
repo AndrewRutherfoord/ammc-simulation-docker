@@ -12,8 +12,8 @@ Both services communicate over a custom bridge network (`10.10.0.0/16`) to provi
 
 ## Prerequisites
 
-- Docker Engine installed
-- Docker Compose V2+
+- Docker Engine installed. Alternatively use podman. Podman has the same command line syntax as Docker and is free.
+- Docker Compose V2+. Alternatively use podman-componse
 
 ## Quick Start
 
@@ -23,9 +23,9 @@ git clone https://github.com/AndrewRutherfoord/ammc-simulation-docker.git
 cd ammc-simulation-docker
 ```
 
-2. Start the simulation:
+2. Start the simulation for AMB and compatible decoders:
 ```bash
-docker compose up
+docker compose up -d
 ```
 
 3. Access the AMMC decoder websocket
@@ -37,6 +37,13 @@ ws://localhost:9000
 ```bash
 docker compose down
 ```
+
+## Using simulation with MyLaps X2 configuration
+
+The Ammc-x2 contains simulation mode embedded inside the main executable. There is no need to start simulator separately.
+Just use `-m` command line param like this:
+
+    docker run --init ammc ./ammc-x2 user password host -m -w 9000
 
 ## Configuration
 
