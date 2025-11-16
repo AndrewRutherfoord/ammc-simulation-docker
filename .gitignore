@@ -1,2 +1,5 @@
 .env*
 !.env.example
+
+ammc-latest.zip
+ammc-latest/**
