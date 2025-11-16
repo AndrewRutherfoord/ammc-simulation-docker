@@ -1,0 +1,35 @@
+services:
+  mariadb:
+    image: mariadb
+    ports:
+      - "3306:3306"
+    environment:
+      - MARIADB_USER=${DB_USER}
+      - MARIADB_PASSWORD=${DB_PASSWORD}
+      - MARIADB_DATABASE=${DB_NAME}
+      - MARIADB_ROOT_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - mariadbdata:/var/lib/mysql
+    restart: always
+    networks:
+      sharednet:
+        ipv4_address: 10.10.0.4
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  decoder:
+    command: >
+      ./linux_x86-64/ammc-amb
+      10.10.0.2 
+      -v 
+      --db mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST:-10.10.0.4}:3306/${DB_NAME}
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+volumes:
+  mariadbdata:
