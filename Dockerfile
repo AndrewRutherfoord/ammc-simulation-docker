@@ -46,16 +46,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # ---- Copy binaries from builder ----
-COPY --from=builder /build/linux_x86-64/ ./linux_x86-64/
-COPY --from=builder /build/apple_m/ ./apple_m/
-
-RUN if [ "${TARGETARCH}" = "arm64" ]; then \
-    cp -r ./apple_m/* ./; \
-else \
-    cp -r ./linux_x86-64/* ./; \
-fi
-
-# RUN rm -rf ./linux_x86-64/ ./apple_m/
+COPY --from=builder /build/linux_x86-64/ ./
 
 # ---- Ensure executable permissions ----
 RUN chmod +x ./ammc-* || true

@@ -2,6 +2,7 @@ services:
 
   sim:
     image: ghcr.io/andrewrutherfoord/ammc:latest
+    platform: linux/amd64 # Ensure using amd64 build even on arm hosts
     build:
       context: .
     container_name: sim
@@ -22,6 +23,7 @@ services:
 
   decoder:
     image: ghcr.io/andrewrutherfoord/ammc:latest
+    platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfile
