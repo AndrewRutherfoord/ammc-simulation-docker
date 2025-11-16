@@ -6,7 +6,7 @@ services:
       context: .
     container_name: sim
     command: >
-      ./linux_x86-64/ammc-sim
+      ./ammc-sim
       -m 10.10.0.2
       -d ${SIM_PASSING_DELAY:-1000-3000}
       --decoder-id ${SIM_DECODER_ID:-0A87E5}
@@ -30,7 +30,7 @@ services:
     container_name: decoder
     # By default just runs with websocket enabled. No DB connection.
     command: >
-      ./linux_x86-64/ammc-amb
+      ./ammc-amb
       10.10.0.2 
       -v -w 9000
     depends_on:

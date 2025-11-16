@@ -55,7 +55,7 @@ else \
     cp -r ./linux_x86-64/* ./; \
 fi
 
-RUN rm -rf ./linux_x86-64/ ./apple_m/
+# RUN rm -rf ./linux_x86-64/ ./apple_m/
 
 # ---- Ensure executable permissions ----
 RUN chmod +x ./ammc-* || true
