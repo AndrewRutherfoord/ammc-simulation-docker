@@ -27,17 +27,21 @@ RUN wget -q https://www.ammconverter.eu/ammc-${AMMC_VER}.zip \
 # =========================
 FROM ubuntu:24.04
 
+# ---- Configuration ---
+ARG AMMC_VER=latest
+
 # ---- Install only runtime deps ----
 RUN apt-get update && apt-get install -y \
     libstdc++6 \
     ca-certificates \
+    netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
 # ---- Working directory ----
 WORKDIR /app
 
 # ---- Copy binaries from builder ----
-COPY --from=builder /build/linux_x86-64/ .
+COPY --from=builder /build/linu_x64-64/ .
 
 # ----  Dependency to MyLaps X2 SDK id needed ----
 ENV LIBRARY_PATH=/app

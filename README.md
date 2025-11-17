@@ -1,39 +1,57 @@
 # AMMC Simulation Docker
 
-A Docker-based simulation environment for [AMM Converter (AMMC)](https://www.ammconverter.eu/) software, providing a containerized setup for running the simulator and decoder to build services around the AMMC software.
+A Docker Compose-based environment for running the AMMC simulator and decoder in containers ([AMM Converter Official Website](https://www.ammconverter.eu/)). The repository provides a base compose file with the decoder and simulator, and optional compose files that add database containers for all of the databases supported by AMMC:
+- Postgres
+- MongoDB
+- MariaDB
 
 ## Overview
 
-This project uses Docker Compose to run two services:
-- **sim**: Runs the AMMC simulator (ammc-sim) to generate transponder passings
-- **decoder**: Runs the AMMC AMB decoder and websocket interface on port 9000
+This project uses Docker Compose to run at minimum two services:
+- `sim`: Runs the AMMC simulator (`ammc-sim`) to generate transponder passings
+- `decoder`: Runs the AMMC AMB decoder (`ammc-amb`). The decoder connects to the simulator to receive passings like it would for a real decoder. In the default setup, the decoder exposes a websocket/API interface on port `9000` of the host.
 
-Both services communicate over a custom bridge network (`10.10.0.0/16`) to provide static IPs for the services.
+Optional database services are provided as separate compose fragments:
+- `docker-compose.postgres.yaml` — PostgreSQL service
+- `docker-compose.mongo.yaml` — MongoDB service
+- `docker-compose.mariadb.yaml` — MariaDB/MySQL service
+
+All services are attached to a custom bridge network (`10.10.0.0/16`) with static IPs so the `decoder` and `sim` can reliably communicate.
 
 ## Prerequisites
 
 - Docker Engine installed. Alternatively use podman. Podman has the same command line syntax as Docker and is free.
 - Docker Compose V2+. Alternatively use podman-componse
 
-## Quick Start
+## Quick start
 
-1. Clone the repository:
+1. Clone the repository and change into it:
+
 ```bash
 git clone https://github.com/AndrewRutherfoord/ammc-simulation-docker.git
 cd ammc-simulation-docker
 ```
 
-2. Start the simulation for AMB and compatible decoders:
+2. Create a `.env` file based on the provided example:
+
+```bash
+cp .env.example .env
+```
+
+3. Run the default setup (simulator + decoder) using the base compose file:
+
 ```bash
 docker compose up -d
 ```
 
-3. Access the AMMC decoder websocket
+4. Open the decoder interface (websocket/API) at:
+
 ```
 ws://localhost:9000
 ```
 
-4. Stop the simulation:
+5. Stop and remove containers:
+
 ```bash
 docker compose down
 ```
@@ -45,11 +63,55 @@ Just use `-m` command line param like this:
 
     docker run --init ammc ./ammc-x2 user password host -m -w 9000
 
-## Configuration
+## Using optional database compose files
 
-The simulation can be customized using environment variables. Create a `.env` file in the project root or set variables directly. You can refer to the example `.env.example` file for guidance. Without creating the `.env` file, default values will be used.
+The repo splits optional DB services into separate compose files so you only enable the DB you need. Combine them with the base file using `-f` in the desired order.
 
-To see a variable reference see the AMMC Simulator Docs: https://www.ammconverter.eu/docs/simulator/usage/
+### PostgreSQL
+
+```bash
+docker compose -f docker-compose.yaml -f docker-compose.postgres.yaml up -d
+```
+
+### MongoDB
+
+```bash
+docker compose -f docker-compose.yaml -f docker-compose.mongo.yaml up -d
+```
+
+### MariaDB/MySQL
+
+```bash
+docker compose -f docker-compose.yaml -f docker-compose.mariadb.yaml up -d
+```
+
+### Notes:
+
+- Compose file order matters: later files override or extend earlier ones.
+- The DB fragments add a container at `10.10.0.4` and make the `decoder` depend on the DB healthy state where appropriate.
+- Changes to the command in the base compose file will be overridden by those in the DB fragments. So if you need to modify the decoder command when using a DB fragment, do so in that fragment file.
+
+## Environment variables
+
+Configure behavior via a `.env` file (see `.env.example`). Important variables used by the compose files include:
+
+- Simulator variables: `SIM_PASSING_DELAY`, `SIM_DECODER_ID`, `SIM_HITS`, `SIM_PASSING_NUMBERS`, `SIM_STRENGTH`, `SIM_TRANSPONDER`, `SIM_STARTUP_DELAY`, `SIM_SHUTDOWN_DELAY`
+- Database variables: `DB_NAME`, `DB_USER`, `DB_PASSWORD`
+
+The `docker-compose.*.yaml` fragments set the DB container IP to `10.10.0.4` by default; the `decoder` uses these connection values to populate its `--db` argument. See `.env.example` for a ready-to-edit sample.
+
+## Development & useful commands
+
+- View logs:
+
+```bash
+docker compose logs -f
+docker compose logs -f ammc-amb
+```
+
+## Disclaimer 
+
+This repository is for testing and simulation purposes only. For production use or deployment of the AMMC or databases in this repository, please refer to the official of the given software providers. The authors of this repository are not responsible for any issues arising from the use of this software in production environments.
 
 ## License
 

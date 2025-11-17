@@ -1,5 +1,5 @@
-
 services:
+
   sim:
     image: ammc
     init: true

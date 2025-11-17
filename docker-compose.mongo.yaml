@@ -1,0 +1,33 @@
+services:
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
+    restart: always
+    networks:
+      sharednet:
+        ipv4_address: 10.10.0.4
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  decoder:
+    command: >
+      ./linux_x86-64/ammc-amb
+      10.10.0.2 
+      -v 
+      --db mongodb://${DB_USER}:${DB_PASSWORD}@${DB_HOST:-10.10.0.4}:27017/${DB_NAME}?authSource=admin
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+volumes:
+  mongodb:

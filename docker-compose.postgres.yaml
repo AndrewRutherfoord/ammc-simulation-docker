@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:16
+    ports:
+      - "${PG_EXPOSE_PORT:-5432}:5432"
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: always
+    networks:
+      sharednet:
+        ipv4_address: 10.10.0.4
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME} -h 127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+  
+  decoder:
+    command: >
+      ./linux_x86-64/ammc-amb
+      10.10.0.2 
+      -v 
+      --db postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST:-10.10.0.4}:5432/${DB_NAME}
+    depends_on:
+      # Make the decoder wait for the database to be healthy
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
