@@ -4,8 +4,7 @@
 FROM ubuntu:24.04 AS builder
 
 # ---- Configuration ----
-ARG AMMC_VER=latest
-ENV AMMC_VER=${AMMC_VER}
+ARG AMMC_VER=${AMMC_VER:-latest}
 
 # ---- Install build tools ----
 RUN apt-get update && apt-get install -y \
@@ -19,16 +18,13 @@ WORKDIR /build
 
 # ---- Download & unpack ----
 RUN wget -q https://www.ammconverter.eu/ammc-${AMMC_VER}.zip \
-    && unzip -q ammc-${AMMC_VER}.zip \
+    && unzip  ammc-${AMMC_VER}.zip \
     && rm ammc-${AMMC_VER}.zip
 
 # =========================
 # Stage 2 – Runtime
 # =========================
 FROM ubuntu:24.04
-
-# ---- Configuration ---
-ARG AMMC_VER=latest
 
 # ---- Install only runtime deps ----
 RUN apt-get update && apt-get install -y \
@@ -41,7 +37,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # ---- Copy binaries from builder ----
-COPY --from=builder /build/linu_x64-64/ .
+COPY --from=builder /build/linux_x86-64/ .
 
 # ----  Dependency to MyLaps X2 SDK id needed ----
 ENV LIBRARY_PATH=/app
