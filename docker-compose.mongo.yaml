@@ -21,7 +21,7 @@ services:
 
   decoder:
     command: >
-      ./linux_x86-64/ammc-amb
+      ./ammc-amb
       10.10.0.2 
       -v 
       --db mongodb://${DB_USER}:${DB_PASSWORD}@${DB_HOST:-10.10.0.4}:27017/${DB_NAME}?authSource=admin

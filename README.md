@@ -9,7 +9,7 @@ A Docker Compose-based environment for running the AMMC simulator and decoder in
 
 This project uses Docker Compose to run at minimum two services:
 - `sim`: Runs the AMMC simulator (`ammc-sim`) to generate transponder passings
-- `decoder`: Runs the AMMC AMB decoder (`ammc-amb`). The decoder connects to the simulator to receive passings like it would for a real decoder. In the default setup, the decoder exposes a websocket/API interface on port `9000` of the host.
+- `ammc-amb`: Runs the AMMC AMB decoder (`ammc-amb`). The decoder connects to the simulator to receive passings like it would for a real decoder. In the default setup, the decoder exposes a websocket/API interface on port `9000` of the host.
 
 Optional database services are provided as separate compose fragments:
 - `docker-compose.postgres.yaml` — PostgreSQL service

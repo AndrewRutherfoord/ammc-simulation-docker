@@ -31,7 +31,7 @@ services:
       dockerfile: Dockerfile
       args:
        AMMC_SIMULATION_VERSION: ${AMMC_VER:-latest}
-    container_name: decoder
+    container_name: ammc-amb
     command: ./ammc-amb -w 9000 10.10.0.2
     ports:
       - "9000:9000"
