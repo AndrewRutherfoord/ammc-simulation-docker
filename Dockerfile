@@ -4,7 +4,7 @@
 FROM ubuntu:24.04 AS builder
 
 # ---- Configuration ----
-ARG AMMC_VER=${AMMC_VER:-latest}
+ARG AMMC_VER=${AMMC_SIMULATION_VERSION:-latest}
 
 # ---- Install build tools ----
 RUN apt-get update && apt-get install -y \
@@ -18,7 +18,7 @@ WORKDIR /build
 
 # ---- Download & unpack ----
 RUN wget -q https://www.ammconverter.eu/ammc-${AMMC_VER}.zip \
-    && unzip  ammc-${AMMC_VER}.zip \
+    && unzip ammc-${AMMC_VER}.zip \
     && rm ammc-${AMMC_VER}.zip
 
 # =========================
