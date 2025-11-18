@@ -9,7 +9,7 @@ A Docker Compose-based environment for running the AMMC simulator and decoder in
 
 This project uses Docker Compose to run at minimum two services:
 - `sim`: Runs the AMMC simulator (`ammc-sim`) to generate transponder passings
-- `decoder`: Runs the AMMC AMB decoder (`ammc-amb`). The decoder connects to the simulator to receive passings like it would for a real decoder. In the default setup, the decoder exposes a websocket/API interface on port `9000` of the host.
+- `ammc-amb`: Runs the AMMC AMB decoder (`ammc-amb`). The decoder connects to the simulator to receive passings like it would for a real decoder. In the default setup, the decoder exposes a websocket/API interface on port `9000` of the host.
 
 Optional database services are provided as separate compose fragments:
 - `docker-compose.postgres.yaml` — PostgreSQL service
@@ -20,8 +20,8 @@ All services are attached to a custom bridge network (`10.10.0.0/16`) with stati
 
 ## Prerequisites
 
-- Docker Engine
-- Docker Compose V2+ (the `docker compose` CLI)
+- Docker Engine installed. Alternatively use podman. Podman has the same command line syntax as Docker and is free.
+- Docker Compose V2+. Alternatively use podman-componse
 
 ## Quick start
 
@@ -41,7 +41,7 @@ cp .env.example .env
 3. Run the default setup (simulator + decoder) using the base compose file:
 
 ```bash
-docker compose up
+docker compose up -d
 ```
 
 4. Open the decoder interface (websocket/API) at:
@@ -55,6 +55,13 @@ ws://localhost:9000
 ```bash
 docker compose down
 ```
+
+## Using simulation with MyLaps X2 configuration
+
+The Ammc-x2 contains simulation mode embedded inside the main executable. There is no need to start simulator separately.
+Just use `-m` command line param like this:
+
+    docker run --init ammc ./ammc-x2 user password host -m -w 9000
 
 ## Using optional database compose files
 
@@ -99,7 +106,7 @@ The `docker-compose.*.yaml` fragments set the DB container IP to `10.10.0.4` by 
 
 ```bash
 docker compose logs -f
-docker compose logs -f decoder
+docker compose logs -f ammc-amb
 ```
 
 ## Disclaimer 

@@ -1,12 +1,15 @@
 services:
 
   sim:
-    image: ghcr.io/andrewrutherfoord/ammc:latest
+    image: ammc
+    init: true
     build:
       context: .
+      args:
+        AMMC_SIMULATION_VERSION: ${AMMC_VER:-latest}
     container_name: sim
     command: >
-      ./linux_x86-64/ammc-sim
+      ./ammc-sim
       -m 10.10.0.2
       -d ${SIM_PASSING_DELAY:-1000-3000}
       --decoder-id ${SIM_DECODER_ID:-0A87E5}
@@ -20,19 +23,18 @@ services:
       sharednet:
         ipv4_address: 10.10.0.2
 
-  decoder:
-    image: ghcr.io/andrewrutherfoord/ammc:latest
+  ammc-amb:
+    image: ammc
+    init: true
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+       AMMC_SIMULATION_VERSION: ${AMMC_VER:-latest}
+    container_name: ammc-amb
+    command: ./ammc-amb -w 9000 10.10.0.2
     ports:
-      - "${DECODER_EXPOSE_PORT:-9000}:9000"
-    container_name: decoder
-    # By default just runs with websocket enabled. No DB connection.
-    command: >
-      ./linux_x86-64/ammc-amb
-      10.10.0.2 
-      -v -w 9000
+      - "9000:9000"
     depends_on:
       sim:
         condition: service_started
